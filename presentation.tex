@@ -2,6 +2,7 @@
 
 \usepackage{tikz}
 \usetikzlibrary{matrix}
+\usepackage{fancyvrb}
 
 %\usepackage{tieto}
 \usetheme{Warsaw}
@@ -83,7 +84,7 @@ int f(const vector<int>& t) {
     \small
     \begin{verbatim}
 int f(const vector<int>& t) {
-    std::sort(t.begin(), t.end());
+    sort(t.begin(), t.end());
     int cnt = 0, prev = -1;
     for (int i = 0; i < t.size(); ++i) {
         if (prev == t[i]) cnt++;
@@ -119,10 +120,49 @@ int f(const vector<int>& t) {
     \end{block}
 \end{frame}
 
+\begin{frame}[fragile]
+    \frametitle{Task: find not paired item}
+    \begin{verbatim}
+int f(const vector<int>& t) {
+    map<int,int> m;
+    for (int item : t)
+        m[item]++;
+    for (auto it : m) {
+        if (it.second % 2 == 1)
+            return it.first;
+    }
+    throw "All items have pairs!";
+}\end{verbatim}
+
+    \begin{block}{}
+    What is the time complexity? \pause \textcolor{red}{$O(N \cdot \log N)$}
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Task: find not paired item}
+    \begin{verbatim}
+int f(const vector<int>& t) {
+    unordered_map<int,int> m;
+    for (int item : t)
+        m[item]++;
+    for (auto it : m) {
+        if (it.second % 2 == 1)
+            return it.first;
+    }
+    throw "All items have pairs!";
+}\end{verbatim}
+
+    \begin{block}{}
+    What is the time complexity? \pause \textcolor{red}{$O(N)$}
+    \end{block}
+\end{frame}
+
+
 \subsection{Vector}
 
 \begin{frame}
-    \frametitle{Vector - time complexity}
+    \frametitle{Vector -- time complexity}
     Where do I find the information about the time complexity?
     \pause
     \textcolor{red}{Documentation!}
@@ -132,12 +172,12 @@ int f(const vector<int>& t) {
 \end{frame}
 
 \begin{frame}
-    \frametitle{Vector - time complexity}
+    \frametitle{Vector -- time complexity}
     \includegraphics[width=11cm]{vector_erase.png}
 \end{frame}
 
 \begin{frame}
-    \frametitle{Vector - internal implementation}
+    \frametitle{Vector -- internal implementation}
 
     TODO: make piktures showing inserting elements (with resizing and copying).
 
@@ -179,16 +219,212 @@ int f(const vector<int>& t) {
 
 \section{Hash tables}
 
-\begin{frame}
-    \frametitle{}
-    What is it?
-\end{frame}
-
-\subsection{Hash table of integers}
+\subsection{Idea}
 
 \begin{frame}
-    \frametitle{}
+    \frametitle{Hashing -- why do we need it?}
+
+    \pause
+    \begin{block}{}
+    $U$ -- universe of numbers that may appear in the data.
+    \end{block}
+
+    What if $|U|$ is small (i.e. $1\,000\,000$)? \pause
+
+    \medskip
+    What if $|U|$ is large (i.e. $10^{18}$)? \pause
+
+    \medskip
+    ...then we need \textit{hashing}!
 \end{frame}
+
+\begin{frame}
+    \frametitle{Hashing -- why do we need it?}
+    \begin{block}{}
+    $U$ -- universe of numbers that may appear in the data. \\
+    $A$ -- array that we actually have. \\
+    $M$ -- size of the array $A$.
+    \end{block}
+
+    \pause
+    If we had a (fast) function $h : U \rightarrow \{0, \dots, M-1\}$, then we
+    could store each element $x$ within $A[f(x)]$.
+
+    \pause
+    \textcolor{lightgray}{
+    \textit{Note:} If $|U|$ is small, then the identity function $f(x) = x$
+    would do.}
+
+    \pause
+    What could possibly go wrong? \pause
+    \begin{itemize}
+        \item $f$ needs to be fast to compute, \pause
+        \item $f$ needs to be deterministic (or pseudorandom), \pause
+        \item what if we have a \textit{collision} ($f(x) = f(y)$)? \pause
+        \item what if $f$ does \textbf{not} distribute elements universally over
+            the available cells?
+    \end{itemize}
+
+\end{frame}
+
+\subsection{Properties and limitations}
+
+\begin{frame}
+    \frametitle{Hashing -- properties}
+    \begin{itemize}
+        \item $f$ is an arithmetic expression,
+            i.e. $f(x) = (5 \cdot x)\ \mathrm{mod}\ M$, \pause
+        \item $f$ is randomly chosen from some group of functions
+            (family), \pause
+        \item \textit{collision} -- we store the elements
+            within a linked list, \pause
+        \item a good function family ensures the correct distrubution, \pause
+        \item if gets full then all elements are rehashed into
+            a bigger one. \pause
+    \end{itemize}
+
+    What are the time complexities of the operations?
+    \begin{itemize}
+        \item \textit{insert} -- \pause $O(1)$, \pause
+        \item \textit{delete} -- \pause $O(1)$ (expected), \pause
+        \item \textit{lookup} -- \pause $O(1)$ (expected).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Other data types}
+
+    If a more complex data type needs to be stored, then it is necessary
+    to define an own hash function. \pause What is more, \texttt{std::pair}
+    is such a type, so STL does not provide anything for us. \pause
+
+    Example hash function for \texttt{std::pair<T1,T2>}:
+    \begin{Verbatim}[commandchars=\\\{\},fontsize=\small]
+struct pair_hash
+\{
+    template <class T1, class T2>
+    std::size_t operator()
+        (const std::pair<T1, T2> &pair) const
+    \{
+        return std::hash<T1>()(pair.first)
+               ^ std::hash<T2>()(pair.second);
+    \}
+\};
+\end{Verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Other data types}
+
+    If a more complex data type needs to be stored, then it is necessary
+    to define an own hash function. What is more, \texttt{std::pair}
+    is such a type, so STL does not provide anything for us.
+
+    Example hash function for \texttt{std::pair<T1,T2>}:
+    \begin{Verbatim}[commandchars=\\\{\},fontsize=\small]
+struct pair_hash
+\{
+    template <class T1, class T2>
+    std::size_t operator()
+        (const std::pair<T1, T2> &pair) const
+    \{
+        return \textcolor{red}{std::hash<T1>()(pair.first)}
+               \textcolor{red}{^ std::hash<T2>()(pair.second);}
+    \}
+\};
+\end{Verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Other data types}
+
+    If a more complex data type needs to be stored, then it is necessary
+    to define an own hash function. What is more, \texttt{std::pair}
+    is such a type, so STL does not provide anything for us.
+
+    Example hash function for \texttt{std::pair<T1,T2>}:
+    \begin{Verbatim}[commandchars=\\\{\},fontsize=\small]
+struct pair_hash
+\{
+    template <class T1, class T2>
+    std::size_t operator()
+        (const std::pair<T1, T2> &pair) const
+    \{
+        return std::hash<T1>()(pair.first)
+               ^ (std::hash<T2>()(pair.second) << 1);
+    \}
+\};
+\end{Verbatim}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Hashing -- limitations}
+    \pause
+    \begin{itemize}
+        \item for small sets it's extremely inefficient due to rehashing, \pause
+        \item for stored $N$ elements likely there will be a list
+            of size $O(\log \log N)$, \pause
+        \item hashing function needs to be defined for the stored object
+            (alternatively \texttt{operator<} in tree-based map), \pause
+        \item for known hash function it is possible to prepare the data
+            that will all fall into one place (linked list) causing
+            the $O(N^2)$ blow-up. \pause
+    \end{itemize}
+
+    \begin{center}
+    \includegraphics[width=9cm]{blow.png}
+    \end{center}
+\end{frame}
+
+\subsection{Workarounds}
+
+\tikzset{
+  invisible/.style={opacity=0},
+  visible on/.style={alt={#1{}{invisible}}},
+  alt/.code args={<#1>#2#3}{%
+    \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
+  },
+}
+
+\begin{frame}
+    \frametitle{Open addressing}
+    \centering
+    \begin{tikzpicture}[ampersand replacement=\&]
+\matrix (m) [matrix of nodes,
+             nodes={draw, minimum size=8mm,anchor=center},
+             nodes in empty cells, minimum height = 1cm,
+             row 1/.style={nodes={draw=none}},]
+{
+  0 \& 1 \& 2 \& 3 \& 4 \& 5 \& 6  \\
+  \node[draw, visible on=<1-5>] {};
+  \node[draw, visible on=<6>] {\textcolor{green}{84}};
+  \node[draw, visible on=<7->] {84};
+    \&   \&   \&
+    \node[draw, visible on=<1-2>]{}; \node[draw, visible on=<3>]{\textcolor{green}{45}}; \node[draw, visible on=<4-8>]{45};
+    \node[draw, visible on=<9>]{\textcolor{red}{45}}; \node[draw, visible on=<10-12>]{45};
+    \node[draw, visible on=<13>]{\textcolor{red}{45}}; \node[draw, visible on=<14->]{45};
+    \&
+    \node[draw, visible on=<1-9>] {};
+    \node[draw, visible on=<10>]{\textcolor{green}{17}}; \node[draw, visible on=<11->]{17};
+    \node[draw, visible on=<14>]{\textcolor{red}{17}}; \node[draw, visible on=<15->]{17};
+    \&
+    \node[draw, visible on=<1-14>] {};
+    \node[draw, visible on=<15>]{\textcolor{green}{3}}; \node[draw, visible on=<16->]{3};
+    \&    \\
+};
+
+    \node[draw, circle, visible on=<2-3>] at (0,-2) {45};
+    \node[draw, circle, visible on=<5-6>] at (0,-2) {84};
+    \node[draw, circle, visible on=<8-10>] at (0,-2) {17};
+    \node[draw, circle, visible on=<12-15>] at (0,-2) {3};
+
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Cuckoo-hashing}
+\end{frame}
+
 
 \subsection{Hashing, perfect hashing, 2-universal hashing function families \dots}
 
