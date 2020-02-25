@@ -71,7 +71,7 @@
 \begin{frame}[fragile]
     \frametitle{Task: find not paired item}
     \begin{verbatim}
-int f(const vector<int>& t) {
+int find_not_paired(const vector<int>& t) {
     for (int selected_item : t) {
         int cnt = 0;
         for (int item : t)
@@ -80,7 +80,7 @@ int f(const vector<int>& t) {
         if (cnt % 2 == 1)
             return selected_item;
     }
-    throw "All items have pairs!";
+    return 0;
 }\end{verbatim}
 
     \begin{block}{}
@@ -92,7 +92,7 @@ int f(const vector<int>& t) {
     \frametitle{Task: find not paired item}
     \small
     \begin{verbatim}
-int f(const vector<int>& t) {
+int find_not_paired(const vector<int>& t) {
     sort(t.begin(), t.end());
     int cnt = 0, prev = -1;
     for (int i = 0; i < t.size(); ++i) {
@@ -104,7 +104,7 @@ int f(const vector<int>& t) {
         }
     }
     if (cnt % 2 == 1) return prev;
-    throw "All items have pairs!";
+    return 0;
 }\end{verbatim}
 
     \begin{block}{}
@@ -115,13 +115,13 @@ int f(const vector<int>& t) {
 \begin{frame}[fragile]
     \frametitle{Task: find not paired item}
     \begin{verbatim}
-int f(const vector<int>& t) {
+int find_not_paired(const vector<int>& t) {
     int result = 0;
     for (int item : t)
         result ^= item;
     if (result > 0)
         return result;
-    throw "All items have pairs!";
+    return 0;
 }\end{verbatim}
 
     \begin{block}{}
@@ -132,7 +132,7 @@ int f(const vector<int>& t) {
 \begin{frame}[fragile]
     \frametitle{Task: find not paired item}
     \begin{verbatim}
-int f(const vector<int>& t) {
+int find_not_paired(const vector<int>& t) {
     map<int,int> m;
     for (int item : t)
         m[item]++;
@@ -140,7 +140,7 @@ int f(const vector<int>& t) {
         if (it.second % 2 == 1)
             return it.first;
     }
-    throw "All items have pairs!";
+    return 0;
 }\end{verbatim}
 
     \begin{block}{}
@@ -151,7 +151,7 @@ int f(const vector<int>& t) {
 \begin{frame}[fragile]
     \frametitle{Task: find not paired item}
     \begin{verbatim}
-int f(const vector<int>& t) {
+int find_not_paired(const vector<int>& t) {
     unordered_map<int,int> m;
     for (int item : t)
         m[item]++;
@@ -159,7 +159,7 @@ int f(const vector<int>& t) {
         if (it.second % 2 == 1)
             return it.first;
     }
-    throw "All items have pairs!";
+    return 0;
 }\end{verbatim}
 
     \begin{block}{}
@@ -273,15 +273,23 @@ int f(const vector<int>& t) {
     \frametitle{Vector -- time complexity}
     \begin{itemize}
         \item \textit{insert (back)} \pause -- $O(1)$ (expected), \pause
-        \item \textit{delete (back)} \pause -- $O(1)$ (expected), \pause
+        \item \textit{delete (back)} \pause -- $O(1)$, \pause
         \item \textit{lookup (index)} \pause -- $O(1)$, \pause
         \item \textit{insert (middle)} -- $O(N)$,
         \item \textit{delete (middle)} -- $O(N)$,
         \item \textit{find (value)} -- $O(N)$.
     \end{itemize}
+
+    \pause
+    \textcolor{gray}{
+        Note: vector does not shrink by itself.
+    }
 \end{frame}
 
-\subsection{Sort?}
+\begin{frame}
+    \frametitle{Insert complexity proof.}
+    Proof!
+\end{frame}
 
 \section{Balanced trees}
 
@@ -320,7 +328,7 @@ int f(const vector<int>& t) {
 \end{frame}
 
 \begin{frame}
-    \frametitle{AVL vs. BST -- time complexity}
+    \frametitle{AVL vs. BST -- worst case time complexity}
     \begin{columns}
     \begin{column}{0.5\textwidth}
     \centering
@@ -344,6 +352,13 @@ int f(const vector<int>& t) {
     \end{block}
     \end{column}
     \end{columns}
+
+    \pause
+    \begin{block}{Note}
+        \texttt{std::set} and \texttt{std::map} are internally using
+        Red-Black Trees which have the same time complexity as AVL, but different
+        internal constraints to ensure balancing.
+    \end{block}
 \end{frame}
 
 \section{Hash tables}
@@ -387,10 +402,8 @@ int f(const vector<int>& t) {
     \pause
     What could possibly go wrong? \pause
     \begin{itemize}
-        \item $f$ needs to be fast to compute, \pause
-        \item $f$ needs to be deterministic (or pseudorandom), \pause
         \item what if we have a \textit{collision} ($f(x) = f(y)$)? \pause
-        \item what if $f$ does \textbf{not} distribute elements universally over
+        \item what if $f$ does \textbf{not} distribute elements uniformly over
             the available cells?
     \end{itemize}
 
@@ -403,18 +416,19 @@ int f(const vector<int>& t) {
     \begin{itemize}
         \item $f$ is an arithmetic expression,
             i.e. $f(x) = (5 \cdot x)\ \mathrm{mod}\ M$, \pause
-        \item $f$ is randomly chosen from some group of functions
+        \item $f$ is randomly chosen from some set of functions
             (family), \pause
-        \item \textit{collision} -- we store the elements
-            within a linked list, \pause
-        \item a good function family ensures the correct distrubution, \pause
-        \item if gets full then all elements are rehashed into
+        \item \textit{collision} -- we store all the key-value pairs within
+            a linked list, \pause
+        \item a good family of functions ensures the correct distrubution
+            (in expectation), \pause
+        \item if the array gets full then all elements are rehashed into
             a bigger one. \pause
     \end{itemize}
 
     What are the time complexities of the operations?
     \begin{itemize}
-        \item \textit{insert} -- \pause $O(1)$, \pause
+        \item \textit{insert (no lookup)} -- \pause $O(1)$, \pause
         \item \textit{delete} -- \pause $O(1)$ (expected), \pause
         \item \textit{lookup} -- \pause $O(1)$ (expected).
     \end{itemize}
@@ -424,8 +438,9 @@ int f(const vector<int>& t) {
     \frametitle{Other data types}
 
     If a more complex data type needs to be stored, then it is necessary
-    to define an own hash function. \pause What is more, \texttt{std::pair}
-    is such a type, so STL does not provide anything for us. \pause
+    to define an own hash function and an equality operator. \pause What is more,
+    \texttt{std::pair} is such a type, so STL does not provide any hash function
+    for us (only the equality operator). \pause
 
     Example hash function for \texttt{std::pair<T1,T2>}:
     \begin{Verbatim}[commandchars=\\\{\},fontsize=\small]
@@ -446,8 +461,9 @@ struct pair_hash
     \frametitle{Other data types}
 
     If a more complex data type needs to be stored, then it is necessary
-    to define an own hash function. What is more, \texttt{std::pair}
-    is such a type, so STL does not provide anything for us.
+    to define an own hash function and an equality operator. What is more,
+    \texttt{std::pair} is such a type, so STL does not provide any hash function
+    for us (only the equality operator).
 
     Example hash function for \texttt{std::pair<T1,T2>}:
     \begin{Verbatim}[commandchars=\\\{\},fontsize=\small]
@@ -468,8 +484,9 @@ struct pair_hash
     \frametitle{Other data types}
 
     If a more complex data type needs to be stored, then it is necessary
-    to define an own hash function. What is more, \texttt{std::pair}
-    is such a type, so STL does not provide anything for us.
+    to define an own hash function and an equality operator. What is more,
+    \texttt{std::pair} is such a type, so STL does not provide any hash function
+    for us (only the equality operator).
 
     Example hash function for \texttt{std::pair<T1,T2>}:
     \begin{Verbatim}[commandchars=\\\{\},fontsize=\small]
@@ -497,8 +514,11 @@ struct pair_hash
             (alternatively \texttt{operator<} in tree-based map), \pause
         \item for known hash function it is possible to prepare the data
             that will all fall into one place (linked list) causing
-            the $O(N^2)$ blow-up. \pause
+            the $\Omega(N)$ blow-up per single operation. \pause
     \end{itemize}
+
+    \textcolor{gray}{\href{https://github.com/gcc-mirror/gcc/blob/5bea0e90e58d971cf3e67f784a116d81a20b927a/libstdc\%2B\%2B-v3/src/shared/hashtable-aux.cc}
+        {\underline{Code!}}} \pause
 
     \begin{center}
     \includegraphics[width=9cm]{blow.png}
@@ -509,6 +529,8 @@ struct pair_hash
 
 \begin{frame}
     \frametitle{Open addressing}
+    Hash function: $hash(x) = x\ \mathrm{mod}\ 7$.
+
     \centering
     \begin{tikzpicture}[ampersand replacement=\&]
 \matrix (m) [matrix of nodes,
@@ -543,10 +565,9 @@ struct pair_hash
 \end{frame}
 
 \begin{frame}
-    \frametitle{Cuckoo-hashing}
+    \frametitle{Cuckoo-hashing (optional)}
+    Idea of how to make the lookup in $O(1)$ in worst case (not expected).
 \end{frame}
 
-
-\subsection{Hashing, perfect hashing, 2-universal hashing function families \dots}
 
 \end{document}
