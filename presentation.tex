@@ -3,6 +3,7 @@
 \usepackage{tikz}
 \usetikzlibrary{matrix}
 \usepackage{fancyvrb}
+\usepackage{movie15}
 
 %\usepackage{tieto}
 \usetheme{Warsaw}
@@ -12,6 +13,14 @@
 \author{Jadwiga Pokorska}
 \institute{TietoEvry}
 \date{26.02.2020}
+
+\tikzset{
+  invisible/.style={opacity=0},
+  visible on/.style={alt={#1{}{invisible}}},
+  alt/.code args={<#1>#2#3}{%
+    \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
+  },
+}
 
 \begin{document}
     %\usebackgroundtemplate{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{Tieto_title.jpg}}
@@ -178,25 +187,98 @@ int f(const vector<int>& t) {
 
 \begin{frame}
     \frametitle{Vector -- internal implementation}
+    \centering
+    \begin{tikzpicture}[ampersand replacement=\&]
+\matrix (m) [matrix of nodes,
+             nodes={draw, minimum size=8mm,anchor=center},
+             nodes in empty cells, minimum height = 1cm,
+             row 1/.style={nodes={draw=none}}]
+{
+  \node[draw=none, visible on=<1-6>] {0};
+  \node[draw=none, visible on=<10->] {0};
+  \&
+  \node[draw=none, visible on=<1-6>] {1};
+  \node[draw=none, visible on=<10->] {1};
+  \&
+  \node[draw=none, visible on=<10->] {2};
+  \&
+  \node[draw=none, visible on=<10->] {3};
+  \&
+  \node[draw=none, visible on=<10->] {4};
+  \&
+  \node[draw=none, visible on=<10->] {5};
+  \&
+  \node[draw=none, visible on=<10->] {6};
+  \&
+  \node[draw=none, visible on=<10->] {7};
+  \\
+  \node[draw, visible on=<1>] {};
+  \node[draw, visible on=<2-6>] {4};
+  \node[draw, visible on=<10>] {};
+  \node[draw, visible on=<11->] {4};
+  \&
+  \node[draw, visible on=<1-2>] {};
+  \node[draw, visible on=<3-6>] {12};
+  \node[draw, visible on=<10-11>] {};
+  \node[draw, visible on=<12->] {12};
+  \&
+  \node[draw, visible on=<10-12>] {};
+  \node[draw, visible on=<13->] {1};
+  \&
+  \node[draw, visible on=<10-13>] {};
+  \node[draw, visible on=<14->] {5};
+  \&
+  \node[draw, visible on=<10-15>] {};
+  \node[draw, visible on=<16->] {87};
+  \&
+  \node[draw, visible on=<10->] {};
+  \&
+  \node[draw, visible on=<10->] {};
+  \&
+  \node[draw, visible on=<10->] {};
+  \\
+};
+\begin{scope}[yshift=-2cm,xshift=-1.6cm]
+\matrix (m) [matrix of nodes,
+             nodes={draw, minimum size=8mm,anchor=center},
+             nodes in empty cells, minimum height = 1cm,
+             row 1/.style={nodes={draw=none}}]
+{
+  \node[draw=none, visible on=<4-14>] {0};
+  \&
+  \node[draw=none, visible on=<4-14>] {1};
+  \&
+  \node[draw=none, visible on=<4-14>] {2};
+  \&
+  \node[draw=none, visible on=<4-14>] {3};
+  \\
+  \node[draw, visible on=<4>] {};
+  \node[draw, visible on=<5-14>] {4};
+  \&
+  \node[draw, visible on=<4-5>] {};
+  \node[draw, visible on=<6-14>] {12};
+  \&
+  \node[draw, visible on=<4-7>] {};
+  \node[draw, visible on=<8-14>] {1};
+  \&
+  \node[draw, visible on=<4-8>] {};
+  \node[draw, visible on=<9-14>] {5};
+  \\
+};
+\end{scope}
+\end{tikzpicture}
+\end{frame}
 
-    TODO: make piktures showing inserting elements (with resizing and copying).
-
-    \begin{tikzpicture}
-    \foreach \v [count=\y] in {1,2,1}{
-  \node [left] at (0,-\y) {$v_\v$};
-  \foreach \i [count=\x, evaluate={\j=int(\i+\i);}] in {0,...,5}{
-     \node [minimum width=1cm,draw] (cell-\y-\x) at (\x,-\y) {\ifcase\y\or\i\or\i\or\j\fi};
-     \ifcase\y
-     \or
-       \node [above=.25cm] at (\x,-\y) {$t_\i$};
-     \or
-       \node [above=.25cm] at (\x,-\y) {$+$};
-     \else
-       \draw [-stealth] (cell-2-\x) -- (cell-3-\x);
-     \fi
-  }
-}
-    \end{tikzpicture}
+\begin{frame}
+    \frametitle{Vector -- time complexity}
+    \begin{itemize}
+        \item \textit{insert (back)} \pause -- $O(1)$ (expected), \pause
+        \item \textit{delete (back)} \pause -- $O(1)$ (expected), \pause
+        \item \textit{lookup (index)} \pause -- $O(1)$, \pause
+        \item \textit{insert (middle)} -- $O(N)$,
+        \item \textit{delete (middle)} -- $O(N)$,
+        \item \textit{find (value)} -- $O(N)$.
+    \end{itemize}
 \end{frame}
 
 \subsection{Sort?}
@@ -206,15 +288,62 @@ int f(const vector<int>& t) {
 \subsection{BST}
 
 \begin{frame}
-    \frametitle{}
-    TODO.
+    \frametitle{Binary search tree}
+    Long long ago, before \texttt{c++11} \dots \pause all sets were based
+    on the binary search trees.
+
+    \centering
+    \begin{tikzpicture}[>=stealth, every node/.style={circle, draw, minimum size=0.75cm}]
+        \node (5) at (0,0) {$5$};
+        \node (2) at (-2,-1.5) {$2$};
+        \node (7) at (2,-1.5) {$7$};
+        \node (1) at (-3,-3) {$1$};
+        \node (3) at (-1,-3) {$3$};
+        \node (15) at (3,-3) {$15$};
+        \draw[->,draw] (5) -- (2);
+        \draw[->,draw] (5) -- (7);
+        \draw[->,draw] (2) -- (1);
+        \draw[->,draw] (2) -- (3);
+        \draw[->,draw] (7) -- (15);
+    \end{tikzpicture}
 \end{frame}
 
-\subsection{AVL / Red-Black Tree}
+\subsection{AVL}
 
 \begin{frame}
-    \frametitle{}
-    TODO.
+    \frametitle{AVL vs. BST}
+    AVL is just a regular BST with rotations that guarantee reasonable
+    time complexities. \pause
+
+    \centering
+    \includemovie{5cm}{5cm}{avl.gif}
+\end{frame}
+
+\begin{frame}
+    \frametitle{AVL vs. BST -- time complexity}
+    \begin{columns}
+    \begin{column}{0.5\textwidth}
+    \centering
+    \begin{block}{BST}
+    \begin{itemize}
+        \item \textit{insert} -- $O(N)$,
+        \item \textit{delete} -- $O(N)$,
+        \item \textit{lookup} -- $O(N)$.
+    \end{itemize}
+    \end{block}
+    \end{column}
+    \pause
+    \begin{column}{0.5\textwidth}
+    \centering
+    \begin{block}{AVL}
+    \begin{itemize}
+        \item \textit{insert} -- $O(\log N)$,
+        \item \textit{delete} -- $O(\log N)$,
+        \item \textit{lookup} -- $O(\log N)$.
+    \end{itemize}
+    \end{block}
+    \end{column}
+    \end{columns}
 \end{frame}
 
 \section{Hash tables}
@@ -363,7 +492,7 @@ struct pair_hash
     \begin{itemize}
         \item for small sets it's extremely inefficient due to rehashing, \pause
         \item for stored $N$ elements likely there will be a list
-            of size $O(\log \log N)$, \pause
+            of size $\Omega(\log \log N)$, \pause
         \item hashing function needs to be defined for the stored object
             (alternatively \texttt{operator<} in tree-based map), \pause
         \item for known hash function it is possible to prepare the data
@@ -377,14 +506,6 @@ struct pair_hash
 \end{frame}
 
 \subsection{Workarounds}
-
-\tikzset{
-  invisible/.style={opacity=0},
-  visible on/.style={alt={#1{}{invisible}}},
-  alt/.code args={<#1>#2#3}{%
-    \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
-  },
-}
 
 \begin{frame}
     \frametitle{Open addressing}
